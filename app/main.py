@@ -17,7 +17,8 @@ origins = [
     "http://localhost:3000",     # Seu React local tradicional
     "http://localhost:5173",     # Se você usar React com Vite local
     "http://localhost:5174",     # Se você usar React com Vite local
-    "https://vitejsviteq2uakyyn-slia--5173--29a3b5f7.local-corp.webcontainer.io",     # Se você usar React com Vite stackblitz
+    "https://vitejsviteq2uakyyn-slia--5173--29a3b5f7.local-corp.webcontainer.io",
+    "https://vitejsviteq2uakyyn-slia--5173--29a3b5f7.local-corp.webcontainer.io/*"     # Se você usar React com Vite stackblitz
     "https://vercel.app",  # URL de produção do seu React no futuro
 ]
 
