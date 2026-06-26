@@ -4,13 +4,17 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 import uuid
 
+# Abra app/models.py e altere apenas a classe BankAccount para ficar assim:
+
 class BankAccount(Base):
     __tablename__ = "bank_accounts"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), nullable=False)
+    # Mudamos as_uuid de True para False aqui para que o ORM serialize como texto puro no Pydantic!
+    user_id = Column(UUID(as_uuid=False), nullable=False) 
     name = Column(String, nullable=False)
-    type = Column(String, nullable=False) # checking, credit_card, etc.
+    type = Column(String, nullable=False)
+
 
 class TransactionGroup(Base):
     __tablename__ = "transaction_groups"
