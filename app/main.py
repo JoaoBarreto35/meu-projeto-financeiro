@@ -1,6 +1,6 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware  # Importe o Middleware
-from app.routers import accounts, transactions, auth
+from fastapi import FastAPI, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
+from app.routers import transactions, auth, accounts, ai
 from app.database import engine, Base
 import app.models
 
@@ -11,33 +11,31 @@ app = FastAPI(
     description="Backend robusto integrado ao Neon.tech."
 )
 
-# ─── CONFIGURAÇÃO DO CORS ──────────────────────────────────────────
-# Lista de URLs de onde as requisições podem vir
-origins = [
-    "http://localhost:3000",     # Seu React local tradicional
-    "http://localhost:5173",     # Se você usar React com Vite local
-    "http://localhost:5174",     # Se você usar React com Vite local
-    "https://vitejsviteq2uakyyn-slia--5173--29a3b5f7.local-corp.webcontainer.io",
-    "https://vitejsviteq2uakyyn-slia--5173--29a3b5f7.local-corp.webcontainer.io/*"     # Se você usar React com Vite stackblitz
-    "https://vercel.app",  # URL de produção do seu React no futuro
-]
-
-# Abra app/main.py e ajuste esta seção:
-
+# 1. Liberamos o CORS padrão de forma agressiva para desenvolvimento
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],             # Força a liberação para qualquer origem de teste!
-    allow_credentials=False,         # Importante: mude para False se usar "*" no allow_origins
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ──────────────────────────────────────────────────────────────────
+# 2. Interceptor de Segurança Nativo (O segredo para matar o erro de Preflight)
+@app.middleware("http")
+async def interceptador_preflight_cors(request: Request, call_next):
+    # Se o navegador enviar um OPTIONS, respondemos 200 OK na hora com as permissões
+    if request.method == "OPTIONS":
+        response = Response(status_code=200)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, Accept"
+        return response
+        
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
 
 app.include_router(auth.router)
 app.include_router(accounts.router)
 app.include_router(transactions.router)
-
-@app.get("/")
-def read_root():
-    return {"status": "API conectada ao Neon.tech com CORS liberado!"}
+app.include_router(ai.router)
