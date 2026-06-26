@@ -12,25 +12,21 @@ router = APIRouter(
     tags=["bank_accounts"]
 )
 
-
 @router.post("/", response_model=BankAccountResponse, status_code=status.HTTP_201_CREATED)
-async def create_account(
+def create_account(
     payload: BankAccountCreate, 
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
 ):
     try:
-        # Converte explicitamente a string do ID para o objeto UUID do banco
         user_uuid = uuid.UUID(str(current_user.id))
 
-        # Cria a instância do SQLAlchemy mapeada
         nova_conta = BankAccount(
-            user_id=user_uuid,  # Corrigido aqui!
+            user_id=user_uuid,
             name=payload.name,
             type=payload.type
         )
         
-        # Insere e salva no banco Neon
         db.add(nova_conta)
         db.commit()
         db.refresh(nova_conta)
@@ -38,28 +34,24 @@ async def create_account(
         return nova_conta
     except Exception as e:
         db.rollback()
-        # Captura e envia o erro real para o React em vez de morrer em 500
         raise HTTPException(status_code=400, detail=f"Erro no Neon: {str(e)}")
 
-
 @router.get("/", response_model=List[BankAccountResponse])
-async def list_accounts(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def list_accounts(
+    db: Session = Depends(get_db), 
+    current_user: User = Depends(get_current_user)
+):
     try:
-        # Extrai a string pura do ID do usuário logado
-        user_id_str = str(current_user.id)
+        user_uuid = uuid.UUID(str(current_user.id))
         
-        # Busca no banco filtrando de forma direta e segura
-        contas = db.query(BankAccount).filter(BankAccount.user_id == user_id_str).all()
+        # Busca no banco de dados Neon de forma síncrona e segura
+        contas = db.query(BankAccount).filter(BankAccount.user_id == user_uuid).all()
         
-        # Garante o retorno de uma lista vazia caso não encontre nada, sem travar
         if contas is None:
             return []
             
         return contas
     except Exception as e:
-        # Registra o erro detalhado nos logs do Render para você ler se quebrar
-        print(f"ALERTA BACKEND: Falha ao listar contas - {str(e)}")
-        # Retorna uma lista vazia para o React não congelar a tela
+        # Se falhar, retorna um array vazio para o React destravar o loading
+        print(f"Erro ao buscar contas no Neon: {str(e)}")
         return []
-
-
