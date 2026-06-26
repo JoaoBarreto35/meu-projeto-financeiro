@@ -45,18 +45,16 @@ async def create_account(
 @router.get("/", response_model=List[BankAccountResponse])
 async def list_accounts(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     try:
-        # Retorna apenas as contas e cartões criados pelo usuário logado
-        contas = db.query(BankAccount).filter(BankAccount.user_id == current_user.id).all()
+        user_uuid = uuid.UUID(str(current_user.id))
         
-        # Se não houver contas cadastradas, retorna uma lista vazia de forma segura
-        if not contas:
-            return []
-            
+        # Filtra as contas do Neon pelo UUID correto
+        contas = db.query(BankAccount).filter(BankAccount.user_id == user_uuid).all()
+        
         return contas
     except Exception as e:
-        # Evita o erro 500 e exibe o log real do banco de dados no console
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
-            detail=f"Erro ao acessar banco de dados: {str(e)}"
+            status_code=400, 
+            detail=f"Erro analítico no banco: {str(e)}"
         )
+
 

@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import date
 from typing import Optional
+from uuid import UUID
 
 class TransactionGroupCreate(BaseModel):
     description: str
@@ -23,14 +24,16 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str
 
+
 class BankAccountCreate(BaseModel):
     name: str
-    type: str # 'checking_account', 'credit_card', 'savings'
+    type: str  # 'checking_account', 'credit_card', 'savings'
 
 class BankAccountResponse(BaseModel):
-    id: str
+    id: UUID       # Mudado de str para UUID!
+    user_id: UUID  # Garante que o ID do usuário também converta sem quebrar
     name: str
     type: str
 
     class Config:
-        from_attributes = True
+        from_attributes = True  # Permite ler objetos do SQLAlchemy diretamente
