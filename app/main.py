@@ -22,13 +22,16 @@ origins = [
     "https://vercel.app",  # URL de produção do seu React no futuro
 ]
 
+# Abra app/main.py e ajuste esta seção:
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,            # Permite requisições destas origens
-    allow_credentials=True,           # Permite envio de cookies/tokens de autenticação
-    allow_methods=["*"],              # Permite todos os métodos (GET, POST, PUT, DELETE)
-    allow_headers=["*"],              # Permite todos os cabeçalhos de requisição
+    allow_origins=["*"],             # Força a liberação para qualquer origem de teste!
+    allow_credentials=False,         # Importante: mude para False se usar "*" no allow_origins
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
+
 # ──────────────────────────────────────────────────────────────────
 
 app.include_router(auth.router)
